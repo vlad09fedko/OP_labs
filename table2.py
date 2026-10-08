@@ -21,3 +21,4 @@ while x <= b:
 
     print(total_sum)
     x += h
+    x = round(x, 3)
