@@ -87,13 +87,13 @@ def logged(
 class JsonFileManager:
     """Class for safely reading, writing, and appending data to a JSON file."""
 
-    @logged(FileNotFound, mode="file", log_file="file_operations.txt")
+    @logged((FileNotFound, FileCorrupted), mode="file", log_file="file_operations.txt")
     def __init__(self, directory_path: str, file_name: str) -> None:
         self.directory_path = directory_path
         self.file_name = file_name
         self.full_path = os.path.join(directory_path, file_name)
 
-        if not os.path.exists(self.full_path) or not os.path.isfile(self.full_path):
+        if not os.path.isfile(self.full_path):
             raise FileNotFound(self.full_path)
 
         if not os.access(self.full_path, os.R_OK):
@@ -102,10 +102,10 @@ class JsonFileManager:
                 f"No read permissions for file: '{self.full_path}'",
             )
 
-    @logged(FileCorrupted, mode="console")
+    @logged((FileNotFound, FileCorrupted), mode="console")
     def read(self) -> Any:
         """Reads and returns data from the JSON file."""
-        if not os.path.exists(self.full_path):
+        if not os.path.isfile(self.full_path):
             raise FileNotFound(self.full_path)
 
         try:
@@ -117,10 +117,10 @@ class JsonFileManager:
                 f"Read error or corrupted JSON structure in '{self.full_path}': {exc}",
             ) from exc
 
-    @logged(FileCorrupted, mode="file", log_file="file_operations.txt")
+    @logged((FileNotFound, FileCorrupted), mode="file", log_file="file_operations.txt")
     def write(self, data: Any) -> None:
         """Overwrites the JSON file with new data."""
-        if not os.path.exists(self.full_path):
+        if not os.path.isfile(self.full_path):
             raise FileNotFound(self.full_path)
 
         try:
